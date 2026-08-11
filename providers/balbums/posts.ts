@@ -1,12 +1,18 @@
 import { Post, ProviderContext } from "../types";
 
-export const getPosts = async (
-  filter: string,
-  page: number,
-  providerValue: string,
-  signal: AbortSignal,
-  providerContext: ProviderContext
-): Promise<Post[]> => {
+export const getPosts = async ({
+  filter,
+  page,
+  providerValue,
+  signal,
+  providerContext
+}: {
+  filter: string;
+  page: number;
+  providerValue: string;
+  signal: AbortSignal;
+  providerContext: ProviderContext;
+}): Promise<Post[]> => {
   const { axios, cheerio } = providerContext;
   let url = `https://balbums.st${filter}&page=${page}`;
   
@@ -38,18 +44,24 @@ export const getPosts = async (
   return posts;
 };
 
-export const getSearchPosts = async (
-  searchQuery: string,
-  page: number,
-  providerValue: string,
-  signal: AbortSignal,
-  providerContext: ProviderContext
-): Promise<Post[]> => {
-  return getPosts(
-    `/?search=${encodeURIComponent(searchQuery)}&mode=broad`,
+export const getSearchPosts = async ({
+  searchQuery,
+  page,
+  providerValue,
+  signal,
+  providerContext
+}: {
+  searchQuery: string;
+  page: number;
+  providerValue: string;
+  signal: AbortSignal;
+  providerContext: ProviderContext;
+}): Promise<Post[]> => {
+  return getPosts({
+    filter: `/?search=${encodeURIComponent(searchQuery)}&mode=broad`,
     page,
     providerValue,
     signal,
     providerContext
-  );
+  });
 };

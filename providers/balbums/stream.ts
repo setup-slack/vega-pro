@@ -1,11 +1,16 @@
 import { Stream, ProviderContext } from "../types";
 
-export const getStream = async (
-  link: string,
-  type: string,
-  signal: AbortSignal,
-  providerContext: ProviderContext
-): Promise<Stream[]> => {
+export const getStream = async ({
+  link,
+  type,
+  signal,
+  providerContext
+}: {
+  link: string;
+  type: string;
+  signal: AbortSignal;
+  providerContext: ProviderContext;
+}): Promise<Stream[]> => {
   const { axios, cheerio } = providerContext;
   
   // link is the Bunkr video page, e.g. https://bunkr.cr/f/...

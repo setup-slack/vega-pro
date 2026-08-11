@@ -1,10 +1,14 @@
 import { Info, ProviderContext } from "../types";
 
-export const getMetaData = async (
-  link: string,
-  provider: string,
-  providerContext: ProviderContext
-): Promise<Info> => {
+export const getMetaData = async ({
+  link,
+  provider,
+  providerContext
+}: {
+  link: string;
+  provider: string;
+  providerContext: ProviderContext;
+}): Promise<Info> => {
   const { axios, cheerio } = providerContext;
   
   const { data } = await axios.get(link);
