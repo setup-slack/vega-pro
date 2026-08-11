@@ -87,3 +87,25 @@ export const getPosts = async ({
     return [];
   }
 };
+
+export const getSearchPosts = async ({
+  searchQuery,
+  page,
+  providerValue,
+  signal,
+  providerContext,
+}: {
+  searchQuery: string;
+  page: number;
+  providerValue: string;
+  signal: AbortSignal;
+  providerContext: ProviderContext;
+}): Promise<Post[]> => {
+  return getPosts({
+    filter: `?s=${encodeURIComponent(searchQuery)}`,
+    page,
+    providerValue,
+    signal,
+    providerContext,
+  });
+};
