@@ -19,6 +19,34 @@ export const getMeta = async function ({
   const image = $('meta[property="og:image"]').attr("content") || "";
   const synopsis = $(".entry-content p").text().trim() || $('meta[name="description"]').attr("content") || "";
 
+  const directLinks: any[] = [];
+  const iframes = $("iframe").map((i, el) => $(el).attr("src")).get();
+  
+  let streamCount = 1;
+  for (let src of iframes) {
+    if (src && src.startsWith("//")) src = "https:" + src;
+    // Explicitly ignore klcams (live cam ads)
+    if (src && src.includes("klcams.com")) {
+        continue;
+    }
+    if (src) {
+        directLinks.push({
+            title: `Stream ${streamCount++}`,
+            link: src,
+            type: "movie",
+        });
+    }
+  }
+
+  // Fallback if no iframes found, just in case
+  if (directLinks.length === 0) {
+      directLinks.push({
+          title: "Play",
+          link: link,
+          type: "movie",
+      });
+  }
+
   return {
     title,
     image,
@@ -28,13 +56,7 @@ export const getMeta = async function ({
     linkList: [
       {
         title: "Stream",
-        directLinks: [
-          {
-            title: "Play",
-            link: link,
-            type: "movie",
-          }
-        ]
+        directLinks,
       }
     ],
   };
