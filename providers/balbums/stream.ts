@@ -13,27 +13,57 @@ export const getStream = async ({
 }): Promise<Stream[]> => {
   const { axios, cheerio } = providerContext;
   
-  // link is the Bunkr video page, e.g. https://bunkr.cr/f/...
-  const { data } = await axios.get(link, { signal });
-  const $ = cheerio.load(data);
-  
   const streams: Stream[] = [];
 
-  // Try to find the download link or video source
-  let videoLink = $("a:contains('Download')").attr("href");
+  try {
+    const { data } = await axios.get(link, { signal });
+    const $ = cheerio.load(data);
+    let downloadLink = $("a:contains('Download')").attr("href");
 
-  if (!videoLink) {
-    // try to find source tag
-    videoLink = $("source").attr("src");
-  }
-  
-  if (videoLink) {
-    streams.push({
-      server: "Bunkr",
-      link: videoLink,
-      type: "mp4",
-      quality: "1080",
-    });
+    if (downloadLink && downloadLink.includes('dl.bunkr.')) {
+      const fileIdMatch = downloadLink.match(/file\/(\d+)/);
+      if (fileIdMatch && fileIdMatch[1]) {
+        const fileId = fileIdMatch[1];
+        
+        // Get metadata
+        const metaRes = await axios.post("https://dl.bunkr.cr/api/_001_v2", { id: fileId }, {
+          headers: { 'Content-Type': 'application/json', 'Referer': downloadLink },
+          signal
+        });
+        
+        if (metaRes.data && metaRes.data.mediafiles && metaRes.data.path) {
+          const rawUrl = new URL(metaRes.data.mediafiles + metaRes.data.path);
+          const path = decodeURIComponent(rawUrl.pathname);
+          
+          // Get signed URL
+          const signRes = await axios.get('https://glb-apisign.cdn.cr/sign?path=' + encodeURIComponent(path), { signal });
+          if (signRes.data && signRes.data.token) {
+            rawUrl.searchParams.set('token', signRes.data.token);
+            rawUrl.searchParams.set('ex', signRes.data.ex);
+            
+            streams.push({
+              server: "Bunkr",
+              link: rawUrl.toString(),
+              type: "mp4",
+              quality: "1080",
+            });
+          }
+        }
+      }
+    } else {
+      // Fallback
+      let videoLink = $("source").attr("src");
+      if (videoLink) {
+        streams.push({
+          server: "Bunkr",
+          link: videoLink,
+          type: "mp4",
+          quality: "1080",
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Balbums stream extraction error:", error);
   }
 
   return streams;

@@ -18,7 +18,7 @@ export const getStream = async ({
     streams.push({
       server: "milfnut",
       link,
-      type: link.endsWith(".mp4") ? "mp4" : "hls",
+      type: link.endsWith(".mp4") ? "mp4" : "m3u8",
       headers: {
         "Referer": "https://milfnut.com/",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
@@ -41,7 +41,7 @@ export const getStream = async ({
         streams.push({
           server: "milfnut",
           link: match[1],
-          type: match[1].includes(".m3u8") ? "hls" : "mp4",
+          type: match[1].includes(".m3u8") ? "m3u8" : "mp4",
           headers: {
             "Referer": "https://milfnut.com/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",

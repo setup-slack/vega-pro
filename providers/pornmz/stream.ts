@@ -37,7 +37,7 @@ export const getStream = async ({
             link: match[1],
             type: "m3u8",
             headers: {
-              "Referer": "https://pornmz.net/",
+              ...(match[1].includes('twimg.com') ? {} : { "Referer": "https://pornmz.net/" }),
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             },
           });
@@ -49,7 +49,7 @@ export const getStream = async ({
                     link: mp4Match[1],
                     type: "mp4",
                     headers: {
-                      "Referer": "https://pornmz.net/",
+                      ...(mp4Match[1].includes('twimg.com') ? {} : { "Referer": "https://pornmz.net/" }),
                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                     },
                 });
