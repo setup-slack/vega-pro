@@ -41,8 +41,16 @@ export const getStream = async function ({
   const streams: Stream[] = [];
 
   const iframes = $("iframe").map((i, el) => $(el).attr("src")).get();
-  for (const src of iframes) {
+  for (let src of iframes) {
+    if (src && src.startsWith("//")) src = "https:" + src;
+    
+    // Explicitly ignore klcams (live cam ads)
+    if (src && src.includes("klcams.com")) {
+        continue;
+    }
+
     if (src && (src.includes("luluvids.top") || src.includes("luluvid.com"))) {
+      let luluExtracted = false;
       try {
         const res = await axios.get(src, {
           headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
@@ -59,14 +67,36 @@ export const getStream = async function ({
                 type: "m3u8",
                 headers: { "User-Agent": "Mozilla/5.0" }
               });
+              luluExtracted = true;
             }
           }
         }
       } catch (e) {
+        // ignore and fallback
       }
+      
+      if (!luluExtracted) {
+          streams.push({
+            server: "Luluvid (Fallback)",
+            link: src,
+            type: "iframe",
+            headers: {
+              "Referer": "https://fulltaboo.tv/",
+              "User-Agent": "Mozilla/5.0",
+            },
+          });
+      }
+    } else if (src) {
+        streams.push({
+            server: "External Embed",
+            link: src,
+            type: "iframe",
+            headers: {
+              "Referer": "https://fulltaboo.tv/",
+              "User-Agent": "Mozilla/5.0",
+            },
+        });
     }
-    // We explicitly ignore klcams.com because it's just a live cam affiliate link without VODs, 
-    // and VOE/hentaisword which use complex packers that aren't natively supported.
   }
 
   return streams;

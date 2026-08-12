@@ -34,11 +34,12 @@ export const getStream = async ({
     if (q) {
       let decoded = "";
       try {
-          decoded = decodeURIComponent(atob(q).split('').map(function(c) {
+          const utf8Str = decodeURIComponent(atob(q).split('').map(function(c) {
               return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
           }).join(''));
+          decoded = decodeURIComponent(utf8Str);
       } catch (e) {
-          decoded = atob(q);
+          decoded = decodeURIComponent(atob(q));
       }
       
       // decoded will contain html like: ...<source src="https://..." type="..."/>...
@@ -54,10 +55,32 @@ export const getStream = async ({
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
           },
         });
+      } else {
+        streams.push({
+          server: "Milfnut (Fallback)",
+          link: link,
+          type: "iframe",
+          headers: {
+            "Referer": "https://milfnut.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          },
+        });
       }
     }
   } catch (error) {
     // ignore
+  }
+
+  if (streams.length === 0) {
+      streams.push({
+        server: "Milfnut (Fallback)",
+        link: link,
+        type: "iframe",
+        headers: {
+          "Referer": "https://milfnut.com/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        },
+      });
   }
 
   return streams;

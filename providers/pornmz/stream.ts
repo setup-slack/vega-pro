@@ -31,11 +31,12 @@ export const getStream = async ({
       try {
         let decodedHtml = "";
         try {
-            decodedHtml = decodeURIComponent(atob(q).split('').map(function(c) {
+            const utf8Str = decodeURIComponent(atob(q).split('').map(function(c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
+            decodedHtml = decodeURIComponent(utf8Str);
         } catch(e) {
-            decodedHtml = atob(q);
+            decodedHtml = decodeURIComponent(atob(q));
         }
         const match = decodedHtml.match(/src="([^"]+\.m3u8[^"]*)"/);
         if (match && match[1]) {
@@ -44,7 +45,7 @@ export const getStream = async ({
             link: match[1],
             type: "m3u8",
             headers: {
-              ...(match[1].includes('twimg.com') ? {} : { "Referer": "https://pornmz.net/" }),
+              ...(match[1].includes('twimg.com') ? {} : { "Referer": "https://pornmz.com/" }),
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             },
           });
@@ -60,12 +61,34 @@ export const getStream = async ({
                       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                     },
                 });
+            } else {
+                streams.push({
+                    server: "Pornmz (Fallback)",
+                    link: iframeSrc,
+                    type: "iframe",
+                    headers: {
+                      "Referer": "https://pornmz.com/",
+                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    },
+                });
             }
         }
       } catch (e) {
         console.error("Failed to decode iframe q parameter", e);
       }
     }
+  }
+
+  if (streams.length === 0 && iframeSrc) {
+      streams.push({
+          server: "Pornmz (Fallback)",
+          link: iframeSrc,
+          type: "iframe",
+          headers: {
+            "Referer": "https://pornmz.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          },
+      });
   }
 
   return streams;
