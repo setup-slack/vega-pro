@@ -32,7 +32,14 @@ export const getStream = async ({
     const url = new URL(link);
     const q = url.searchParams.get("q");
     if (q) {
-      const decoded = decodeURIComponent(Buffer.from(q, "base64").toString("utf8"));
+      let decoded = "";
+      try {
+          decoded = decodeURIComponent(atob(q).split('').map(function(c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+      } catch (e) {
+          decoded = atob(q);
+      }
       
       // decoded will contain html like: ...<source src="https://..." type="..."/>...
       const match = decoded.match(/src="([^"]+\.(m3u8|mp4))"/i) || decoded.match(/src="([^"]+)"/i);

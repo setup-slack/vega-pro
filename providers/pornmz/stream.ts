@@ -29,7 +29,14 @@ export const getStream = async ({
     const q = urlObj.searchParams.get("q");
     if (q) {
       try {
-        const decodedHtml = decodeURIComponent(Buffer.from(q, "base64").toString("utf-8"));
+        let decodedHtml = "";
+        try {
+            decodedHtml = decodeURIComponent(atob(q).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        } catch(e) {
+            decodedHtml = atob(q);
+        }
         const match = decodedHtml.match(/src="([^"]+\.m3u8[^"]*)"/);
         if (match && match[1]) {
           streams.push({
